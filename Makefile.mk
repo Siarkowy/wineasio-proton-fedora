@@ -24,6 +24,13 @@ CC        = gcc
 WINEBUILD = winebuild
 WINECC    = winegcc
 
+ifeq ($(M),64)
+PKG_CONFIG_PATH = /usr/lib$(M)/pkgconfig
+else
+PKG_CONFIG_PATH = /usr/lib/pkgconfig
+endif
+export PKG_CONFIG_PATH
+
 ### Common settings
 
 CEXTRA                = -m$(M) -D_REENTRANT -fPIC -Wall -pipe
