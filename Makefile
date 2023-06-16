@@ -27,6 +27,35 @@ deps:
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+# likely Steam library paths:
+# $(HOME)/.steam/steam/steamapps
+# /mnt/path/to/SteamLibrary/steamapps
+# $(HOME)/.var/app/com.valvesoftware.Steam/data/Steam/steamapps
+STEAM_LIBRARY := $(HOME)/.steam/steam/steamapps
+
+PROTON_ROOT := "$(STEAM_LIBRARY)/common/Proton 7.0"
+PROTON_WINEPREFIX := "$(STEAM_LIBRARY)/compatdata/221680/pfx"
+
+install: 32 64
+	install -v -m755 build32/wineasio.dll $(PROTON_ROOT)/dist/lib/wine/i386-windows/
+	install -v -m755 build32/wineasio.dll.so $(PROTON_ROOT)/dist/lib/wine/i386-unix/
+
+	install -v -m755 build64/wineasio.dll $(PROTON_ROOT)/dist/lib64/wine/x86_64-windows/
+	install -v -m755 build64/wineasio.dll.so $(PROTON_ROOT)/dist/lib64/wine/x86_64-unix/
+
+	install -v -m644 build32/wineasio.dll $(PROTON_WINEPREFIX)/drive_c/windows/syswow64/
+	install -v -m644 build64/wineasio.dll $(PROTON_WINEPREFIX)/drive_c/windows/system32/
+
+register: install
+	WINEPREFIX=$(PROTON_WINEPREFIX) $(PROTON_ROOT)/dist/bin/wine regsvr32 $(PROTON_ROOT)/dist/lib/wine/i386-windows/wineasio.dll
+	WINEPREFIX=$(PROTON_WINEPREFIX) $(PROTON_ROOT)/dist/bin/wine64 regsvr32 $(PROTON_ROOT)/dist/lib64/wine/x86_64-windows/wineasio.dll
+
+silverblue: # tested with fedora 38
+	# required for LD_PRELOAD in 32-bit apps
+	rpm-ostree install steam pipewire-jack-audio-connection-kit.i686
+
+# ---------------------------------------------------------------------------------------------------------------------
+
 clean:
 	rm -f *.o *.so
 	rm -rf build32 build64
